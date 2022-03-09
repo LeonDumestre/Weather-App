@@ -13,11 +13,12 @@ import java.net.URL
 class HttpConnectServerAsyncTask : AsyncTask<Any, Void, String>() {
 
     private lateinit var host : String
-    private lateinit var tv : TextView
+    @SuppressLint("StaticFieldLeak")
+    private lateinit var textView : TextView
 
     override fun doInBackground(vararg params: Any?): String {
         host = params[0] as String
-        tv = params[1] as TextView
+        textView = params[1] as TextView
 
         val url = URL(host)
         val urlConnection = url.openConnection() as HttpURLConnection
@@ -34,7 +35,7 @@ class HttpConnectServerAsyncTask : AsyncTask<Any, Void, String>() {
     }
 
     override fun onPostExecute(result: String?) {
-        tv.text = JSONObject(result).getString("datetime");
+        textView.text = JSONObject(result).getString("datetime");
 
     }
 }

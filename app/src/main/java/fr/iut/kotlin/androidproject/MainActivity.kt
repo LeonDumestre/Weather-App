@@ -1,22 +1,25 @@
 package fr.iut.kotlin.androidproject
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener {
 
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     private lateinit var webView : WebView
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
+    private lateinit var alertDialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +51,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         btHtml.setOnClickListener(this)
         btGoogle.setOnClickListener(this)
         btMeteo.setOnClickListener(this)
+
+        getLocation()
     }
 
     override fun onClick(v: View?) {
@@ -66,23 +72,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
             }
 
             R.id.btMeteo -> {
-                getLocation()
+
             }
         }
     }
 
     private fun getLocation() {
+        //Vérifier si la localisation est activée
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
         } else {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0F, this)
+            setProgressDialog()
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 20000L, 100F, this)
         }
     }
 
     override fun onLocationChanged(location: Location) {
-        location.accuracy = 1F;
-        tvDate.text = "Latitude: " + location.latitude + " , Longitude: " + location.longitude
+        alertDialog.dismiss()
         Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
     }
 
@@ -91,11 +98,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         if (requestCode == locationPermissionCode) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
+                getLocation()
             }
             else {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    fun setProgressDialog() {
+        val loading: AlertDialog.Builder = AlertDialog.Builder(this)
+        loading.setCancelable(false)
+        val inflater: LayoutInflater = this.getLayoutInflater()
+        loading.setView(inflater.inflate(R.layout.custom_dialog_loading, null))
+
+        // Displaying the dialog
+        alertDialog = loading.create()
+        alertDialog.show()
     }
 
 
