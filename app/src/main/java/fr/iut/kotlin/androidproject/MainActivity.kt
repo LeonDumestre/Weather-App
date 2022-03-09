@@ -30,9 +30,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     private lateinit var btMeteo : Button
     private lateinit var tvInfo : TextView
     private lateinit var locationManager: LocationManager
-    private lateinit var locationRequest: LocationRequest
     private val locationPermissionCode = 2
     private lateinit var alertDialog: AlertDialog
+    private var location : Location? = null
+    private var loadData = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,9 +61,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
             }
 
             R.id.btTextHtml -> {
+
             }
 
             R.id.btGoogle -> {
+
             }
 
             R.id.btMeteo -> {
@@ -78,14 +81,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
         } else {
             setProgressDialog()
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 20000L, 100F, this)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 100F, this)
         }
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onLocationChanged(location: Location) {
-        alertDialog.dismiss()
-        Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
+    override fun onLocationChanged(loc: Location) {
+        location = loc
+        if (loadData) {
+            HttpOpenDataAsyncTask().execute(location, tvInfo, alertDialog)
+            loadData = false
+        }
+        Toast.makeText(this, "Latitude: " + loc.latitude + " , Longitude: " + loc.longitude, Toast.LENGTH_LONG).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
