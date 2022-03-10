@@ -10,9 +10,11 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.location.LocationRequest
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -25,31 +27,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     private var URL_TIME_TEXT = "http://worldtimeapi.org/api/timezone/Europe/paris"
     private lateinit var tvDate : TextView
     private lateinit var btDate : Button
-    private lateinit var btHtml : Button
-    private lateinit var btGoogle : Button
-    private lateinit var btMeteo : Button
-    private lateinit var tvInfo : TextView
+    private lateinit var lvWeatherInfo : ListView
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
     private lateinit var alertDialog: AlertDialog
-    private var location : Location? = null
     private var loadData = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btDate = findViewById(R.id.btDate)
         tvDate = findViewById(R.id.tvDate)
-        btHtml = findViewById(R.id.btTextHtml)
-        btGoogle = findViewById(R.id.btGoogle)
-        btMeteo = findViewById(R.id.btMeteo)
-        tvInfo = findViewById(R.id.tvInfo)
-
+        btDate = findViewById(R.id.btDate)
         btDate.setOnClickListener(this)
-        btHtml.setOnClickListener(this)
-        btGoogle.setOnClickListener(this)
-        btMeteo.setOnClickListener(this)
+        lvWeatherInfo = findViewById(R.id.weatherList)
 
         getLocation()
     }
@@ -58,18 +49,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         when(v?.id) {
             R.id.btDate -> {
                 HttpConnectServerAsyncTask().execute(URL_TIME_TEXT, tvDate)
-            }
-
-            R.id.btTextHtml -> {
-
-            }
-
-            R.id.btGoogle -> {
-
-            }
-
-            R.id.btMeteo -> {
-
             }
         }
     }
@@ -86,13 +65,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onLocationChanged(loc: Location) {
-        location = loc
-        if (loadData) {
-            HttpOpenDataAsyncTask().execute(location, tvInfo, alertDialog)
-            loadData = false
+    override fun onLocationChanged(location: Location) {
+        if (!loadData) {
+            runLocationAsyncTask(location)
         }
-        Toast.makeText(this, "Latitude: " + loc.latitude + " , Longitude: " + loc.longitude, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -108,6 +85,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         }
     }
 
+    private fun runLocationAsyncTask(location: Location) {
+        HttpOpenDataAsyncTask().execute(location, lvWeatherInfo, alertDialog, this)
+        loadData = true
+    }
 
     @SuppressLint("SetTextI18n")
     fun setProgressDialog() {
@@ -120,6 +101,5 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         alertDialog = loading.create()
         alertDialog.show()
     }
-
 
 }
