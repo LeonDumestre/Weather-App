@@ -6,6 +6,7 @@ import android.content.Context
 import android.location.Location
 import android.os.AsyncTask
 import android.util.Log
+import android.view.View
 import android.widget.ListView
 import android.widget.TextView
 import org.json.JSONArray
@@ -22,14 +23,16 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&q=&rows=100&sort=forecast"
     private lateinit var location : Location
     private lateinit var listView : ListView
+    private lateinit var tvCommune : TextView
     private lateinit var alertDialog: AlertDialog
     private lateinit var context: Context
 
     override fun doInBackground(vararg params: Any?): String {
-        location = params[0] as Location
-        listView = params[1] as ListView
+        context = params[0] as Context
+        location = params[1] as Location
         alertDialog = params[2] as AlertDialog
-        context = params[3] as Context
+        listView = params[3] as ListView
+        tvCommune = params[4] as TextView
 
         val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
         val url = URL(finalHost)
@@ -55,11 +58,18 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         Log.e("APPLOG", "nb Data : $nhits")
         val records = JSONObject(result).getJSONArray("records")
 
+        var hasCommune = false
         val weatherList : MutableList<WeatherData> = mutableListOf()
         for (i in 0 until 40) {
             val item = records.getJSONObject(i).getJSONObject("fields")
-            val wdData = WeatherData(item.getString("forecast"), BigDecimal(item.getString("2_metre_temperature")).setScale(2, RoundingMode.HALF_EVEN).toString())
+            val wdData = WeatherData(item.getString("forecast"), BigDecimal(item.getString("2_metre_temperature")).setScale(1, RoundingMode.HALF_EVEN).toString())
             weatherList.add(wdData)
+
+            if (!hasCommune && item.has("commune")) {
+                tvCommune.visibility = View.VISIBLE
+                tvCommune.text = item.getString("commune").toString()
+                hasCommune = true
+            }
         }
 
         val adapter = WeatherListAdapter(context, weatherList)

@@ -27,14 +27,25 @@
         app:layout_constraintStart_toEndOf="@+id/btDate"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/tv_commune"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textAlignment="center"
+        android:textSize="30dp"
+        android:layout_margin="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btDate" />
+
     <ListView
-        android:id="@+id/weatherList"
+        android:id="@+id/weather_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btDate" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_commune" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

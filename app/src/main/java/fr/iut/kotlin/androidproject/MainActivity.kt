@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     private var URL_TIME_TEXT = "http://worldtimeapi.org/api/timezone/Europe/paris"
     private lateinit var tvDate : TextView
     private lateinit var btDate : Button
+    private lateinit var tvCommune : TextView
     private lateinit var lvWeatherInfo : ListView
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
@@ -37,20 +38,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        tvCommune = findViewById(R.id.tv_commune)
         tvDate = findViewById(R.id.tvDate)
         btDate = findViewById(R.id.btDate)
-        btDate.setOnClickListener(this)
-        lvWeatherInfo = findViewById(R.id.weatherList)
+        lvWeatherInfo = findViewById(R.id.weather_list)
+
+        btDate.setOnClickListener {
+            HttpConnectServerAsyncTask().execute(URL_TIME_TEXT, tvDate)
+        }
+
 
         getLocation()
-    }
-
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            R.id.btDate -> {
-                HttpConnectServerAsyncTask().execute(URL_TIME_TEXT, tvDate)
-            }
-        }
     }
 
     private fun getLocation() {
@@ -67,7 +65,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     @SuppressLint("SetTextI18n")
     override fun onLocationChanged(location: Location) {
         if (!loadData) {
-            runLocationAsyncTask(location)
+            HttpOpenDataAsyncTask().execute(this, location, alertDialog, lvWeatherInfo, tvCommune)
+            loadData = true
         }
         Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
     }
@@ -85,11 +84,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         }
     }
 
-    private fun runLocationAsyncTask(location: Location) {
-        HttpOpenDataAsyncTask().execute(location, lvWeatherInfo, alertDialog, this)
-        loadData = true
-    }
-
     @SuppressLint("SetTextI18n")
     fun setProgressDialog() {
         val loading: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -100,6 +94,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         // Displaying the dialog
         alertDialog = loading.create()
         alertDialog.show()
+    }
+
+    override fun onClick(p0: View?) {
+
     }
 
 }
