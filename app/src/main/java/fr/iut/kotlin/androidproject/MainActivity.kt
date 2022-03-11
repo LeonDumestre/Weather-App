@@ -13,10 +13,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -29,7 +26,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     private lateinit var btDate : Button
     private lateinit var tvCommune : TextView
     private lateinit var lvWeatherInfo : ListView
+    private val weatherList : MutableList<WeatherData> = mutableListOf()
     private lateinit var locationManager: LocationManager
+    private lateinit var adapter : WeatherListAdapter
     private val locationPermissionCode = 2
     private lateinit var alertDialog: AlertDialog
     private var loadData = false
@@ -38,16 +37,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         tvCommune = findViewById(R.id.tv_commune)
         tvDate = findViewById(R.id.tvDate)
         btDate = findViewById(R.id.btDate)
         lvWeatherInfo = findViewById(R.id.weather_list)
+        adapter = WeatherListAdapter(this, weatherList)
+        lvWeatherInfo.adapter = adapter
 
         btDate.setOnClickListener {
             HttpConnectServerAsyncTask().execute(URL_TIME_TEXT, tvDate)
         }
-
-
         getLocation()
     }
 
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     @SuppressLint("SetTextI18n")
     override fun onLocationChanged(location: Location) {
         if (!loadData) {
-            HttpOpenDataAsyncTask().execute(this, location, alertDialog, lvWeatherInfo, tvCommune)
+            HttpOpenDataAsyncTask().execute(adapter, weatherList, location, alertDialog, tvCommune)
             loadData = true
         }
         Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
@@ -99,5 +99,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     override fun onClick(p0: View?) {
 
     }
+
+
 
 }

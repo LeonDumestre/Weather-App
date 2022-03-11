@@ -7,9 +7,10 @@ import android.location.Location
 import android.os.AsyncTask
 import android.util.Log
 import android.view.View
+import android.widget.Adapter
+import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -22,16 +23,16 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
     private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&q=&rows=100&sort=forecast"
     private lateinit var location : Location
-    private lateinit var listView : ListView
     private lateinit var tvCommune : TextView
     private lateinit var alertDialog: AlertDialog
-    private lateinit var context: Context
+    private lateinit var adapter: WeatherListAdapter
+    private lateinit var weatherList : MutableList<WeatherData>
 
     override fun doInBackground(vararg params: Any?): String {
-        context = params[0] as Context
-        location = params[1] as Location
-        alertDialog = params[2] as AlertDialog
-        listView = params[3] as ListView
+        adapter = params[0] as WeatherListAdapter
+        weatherList = params[1] as MutableList<WeatherData>
+        location = params[2] as Location
+        alertDialog = params[3] as AlertDialog
         tvCommune = params[4] as TextView
 
         val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
@@ -70,10 +71,8 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
                 tvCommune.text = item.getString("commune").toString()
                 hasCommune = true
             }
+            adapter.notifyDataSetChanged()
         }
-
-        val adapter = WeatherListAdapter(context, weatherList)
-        listView.adapter = adapter
     }
 
 }
