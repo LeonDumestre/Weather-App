@@ -37,11 +37,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         tvCommune = findViewById(R.id.tv_commune)
         tvDate = findViewById(R.id.tvDate)
         btDate = findViewById(R.id.btDate)
         lvWeatherInfo = findViewById(R.id.weather_list)
+
         adapter = WeatherListAdapter(this, weatherList)
         lvWeatherInfo.adapter = adapter
 
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         alertDialog.show()
     }
 
-    override fun onClick(p0: View?) {
+    override fun onClick(v: View?) {
 
     }
 

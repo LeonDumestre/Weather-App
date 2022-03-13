@@ -36,6 +36,6 @@ class HttpConnectServerAsyncTask : AsyncTask<Any, Void, String>() {
 
     override fun onPostExecute(result: String?) {
         textView.text = JSONObject(result).getString("datetime");
-
+        Log.e("APPLOG","current date : " + textView.text)
     }
 }
