@@ -61,6 +61,7 @@ class FragmentTestActivity : AppCompatActivity(), LocationListener {
 
     @SuppressLint("SetTextI18n")
     override fun onLocationChanged(loc: Location) {
+        location = loc
         Toast.makeText(
             this,
             "Latitude: " + location.latitude + " , Longitude: " + location.longitude,
@@ -73,8 +74,7 @@ class FragmentTestActivity : AppCompatActivity(), LocationListener {
     private fun setFragments() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
-
-        val firstFragment= FirstFragment()
+        val firstFragment= FirstFragment(location, alertDialog)
         val secondFragment= SecondFragment()
         val thirdFragment= ThirdFragment()
 

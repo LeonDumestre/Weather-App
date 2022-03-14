@@ -57,7 +57,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onPostExecute(result: String?) {
-        alertDialog.dismiss()
         val nhits = JSONObject(result).getString("nhits")
         Log.e("APPLOG", "nb Data : $nhits")
         val records = JSONObject(result).getJSONArray("records")
@@ -110,7 +109,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
         var firstVal = true
         for (i in 0 until weatherDataList.size) {
-
             when (getTimeZone(weatherDataList[i].date)) {
                 0 -> {
                     if (!firstVal && getTimeZone(weatherDataList[i-1].date) != getTimeZone(weatherDataList[i].date))
@@ -134,8 +132,8 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
                 }
             }
             firstVal = false
-
         }
+        alertDialog.dismiss()
         adapter.notifyDataSetChanged()
     }
 
@@ -157,7 +155,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     private fun addWeatherData(list : MutableList<WeatherAllData>, period: String) {
 
         if (list.size > 0) {
-
             var temp = 0.0
             var minTemp = list[0].temperature.toDouble()
             var maxTemp = list[0].temperature.toDouble()
