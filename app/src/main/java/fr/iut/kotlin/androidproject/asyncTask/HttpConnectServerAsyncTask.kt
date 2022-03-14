@@ -1,4 +1,4 @@
-package fr.iut.kotlin.androidproject
+package fr.iut.kotlin.androidproject.asyncTask
 
 import android.annotation.SuppressLint
 import android.os.AsyncTask

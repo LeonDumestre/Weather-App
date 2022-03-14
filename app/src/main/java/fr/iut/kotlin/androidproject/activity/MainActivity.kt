@@ -1,4 +1,4 @@
-package fr.iut.kotlin.androidproject
+package fr.iut.kotlin.androidproject.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -8,15 +8,18 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.location.LocationRequest
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import fr.iut.kotlin.androidproject.R
+import fr.iut.kotlin.androidproject.WeatherData
+import fr.iut.kotlin.androidproject.WeatherListAdapter
+import fr.iut.kotlin.androidproject.asyncTask.HttpConnectServerAsyncTask
+import fr.iut.kotlin.androidproject.asyncTask.HttpOpenDataAsyncTask
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener {

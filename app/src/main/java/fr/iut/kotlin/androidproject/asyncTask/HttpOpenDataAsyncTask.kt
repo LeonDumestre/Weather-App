@@ -1,4 +1,4 @@
-package fr.iut.kotlin.androidproject
+package fr.iut.kotlin.androidproject.asyncTask
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -9,6 +9,9 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import fr.iut.kotlin.androidproject.R
+import fr.iut.kotlin.androidproject.WeatherData
+import fr.iut.kotlin.androidproject.WeatherListAdapter
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -16,12 +19,9 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.net.HttpURLConnection
 import java.net.URL
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
