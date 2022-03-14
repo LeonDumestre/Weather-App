@@ -54,8 +54,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         return text
     }
 
-    //total_water_precipitation : 10ème de pouces/heure
-    //x / 40 * 24 et ça donne des cm
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onPostExecute(result: String?) {
@@ -154,18 +152,18 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         }
     }
 
+    //total_water_precipitation : 10ème de pouces/heure
+    //x / 40 * 24 et ça donne des cm
     private fun addWeatherData(list : MutableList<WeatherAllData>, period: String) {
 
         if (list.size > 0) {
 
-            Log.e("APPLOG", "periode $period")
             var temp = 0.0
             var minTemp = list[0].temperature.toDouble()
             var maxTemp = list[0].temperature.toDouble()
             var windSpeed = 0.0
 
             for (i in 0 until list.size) {
-                Log.e("APPLOG", "Date " + i + list[i].date)
                 temp += list[i].temperature.toDouble()
                 if (list[i].temperature.toDouble() < minTemp)
                     minTemp = list[i].temperature.toDouble()
@@ -176,12 +174,16 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
             }
 
             val solarRadiation = (list[list.size-1].solarRadiation.toDouble() - list[0].solarRadiation.toDouble()) / list.size
-            var icon: Int = when {
+            val precipitation = ((list[list.size-1].precipitation.toDouble() - list[0].precipitation.toDouble()) / list.size) / 4 * 24
+
+            val icon: Int = when {
                 solarRadiation > 2000000 -> R.drawable.ic_sun
-                solarRadiation > 1500000 -> R.drawable.ic_sun_cloud
-                solarRadiation > 1000000 -> R.drawable.ic_simple_cloud
-                solarRadiation > 100000 -> R.drawable.ic_double_cloud
-                else -> R.drawable.ic_moon
+                solarRadiation > 800000 && precipitation > 0.2 -> R.drawable.ic_sun_rain
+                solarRadiation > 800000 -> R.drawable.ic_sun_cloud
+                solarRadiation > 100000 && precipitation > 1 -> R.drawable.ic_double_rain
+                solarRadiation > 100000 && precipitation > 0.2 -> R.drawable.ic_simple_rain
+                solarRadiation > 100000 -> R.drawable.ic_simple_cloud
+                else -> R.drawable.ic_moon_cloud
             }
 
             weatherList.add(
