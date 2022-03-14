@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.Parcel
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,4 +66,4 @@ class WeatherListAdapter(val context: Context, val list: MutableList<WeatherData
 
 }
 
-data class WeatherData(var date: String, var icon : Int, var temp : Double, var minTemp : Int, var maxTemp : Int, var precipitation: Double, var windSpeed: Double)
+data class WeatherData(var date: String, var icon : Int, var temp : Double, var minTemp : Int, var maxTemp : Int, var precipitation: Double, var windSpeed: Double) : Serializable
