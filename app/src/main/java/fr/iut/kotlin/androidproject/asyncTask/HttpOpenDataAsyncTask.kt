@@ -10,8 +10,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.WeatherData
 import fr.iut.kotlin.androidproject.WeatherListAdapter
+import fr.iut.kotlin.androidproject.data.WeatherAllData
+import fr.iut.kotlin.androidproject.data.WeatherData
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -199,5 +200,3 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     }
 
 }
-
-data class WeatherAllData(var date: String, var temperature: String, var humidity: String, var precipitation: String, var windSpeed: String, var solarRadiation: String)

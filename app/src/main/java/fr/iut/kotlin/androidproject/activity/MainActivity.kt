@@ -10,47 +10,28 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.WeatherData
-import fr.iut.kotlin.androidproject.WeatherListAdapter
-import fr.iut.kotlin.androidproject.asyncTask.HttpConnectServerAsyncTask
-import fr.iut.kotlin.androidproject.asyncTask.HttpOpenDataAsyncTask
+import fr.iut.kotlin.androidproject.fragment.MapsFragment
+import fr.iut.kotlin.androidproject.fragment.SettingsFragment
+import fr.iut.kotlin.androidproject.fragment.WeatherFragment
 
+class MainActivity : AppCompatActivity(), LocationListener {
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener {
-
-    private var URL_TIME_TEXT = "http://worldtimeapi.org/api/timezone/Europe/paris"
-    private lateinit var tvDate : TextView
-    private lateinit var btDate : Button
-    private lateinit var tvCommune : TextView
-    private lateinit var lvWeatherInfo : ListView
-    private val weatherList : MutableList<WeatherData> = mutableListOf()
+    private lateinit var location: Location
     private lateinit var locationManager: LocationManager
-    private lateinit var adapter : WeatherListAdapter
     private val locationPermissionCode = 2
     private lateinit var alertDialog: AlertDialog
-    private var loadData = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        tvCommune = findViewById(R.id.tv_commune)
-        tvDate = findViewById(R.id.tvDate)
-        btDate = findViewById(R.id.btDate)
-        lvWeatherInfo = findViewById(R.id.weather_list)
-
-        adapter = WeatherListAdapter(this, weatherList)
-        lvWeatherInfo.adapter = adapter
-
-        btDate.setOnClickListener {
-            HttpConnectServerAsyncTask().execute(URL_TIME_TEXT, tvDate)
-        }
         getLocation()
     }
 
@@ -63,15 +44,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
             setProgressDialog()
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 100F, this)
         }
-    }
-
-    @SuppressLint("SetTextI18n")
-    override fun onLocationChanged(location: Location) {
-        if (!loadData) {
-            HttpOpenDataAsyncTask().execute(adapter, weatherList, location, alertDialog, tvCommune)
-            loadData = true
-        }
-        Toast.makeText(this, "Latitude: " + location.latitude + " , Longitude: " + location.longitude, Toast.LENGTH_LONG).show()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -88,10 +60,41 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
     }
 
     @SuppressLint("SetTextI18n")
+    override fun onLocationChanged(loc: Location) {
+        location = loc
+        Toast.makeText(
+            this,
+            "Latitude: " + location.latitude + " , Longitude: " + location.longitude,
+            Toast.LENGTH_LONG
+        ).show()
+        locationManager.removeUpdates(this)
+        setFragments()
+    }
+
+    private fun setFragments() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
+        val firstFragment= WeatherFragment(location, alertDialog)
+        val secondFragment= MapsFragment()
+        val thirdFragment= SettingsFragment()
+
+        setCurrentFragment(firstFragment)
+
+        bottomNavigationView.setOnNavigationItemSelectedListener {
+            when(it.itemId){
+                R.id.location ->setCurrentFragment(firstFragment)
+                R.id.map ->setCurrentFragment(secondFragment)
+                R.id.settings ->setCurrentFragment(thirdFragment)
+            }
+            true
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     fun setProgressDialog() {
         val loading: AlertDialog.Builder = AlertDialog.Builder(this)
         loading.setCancelable(false)
-        val inflater: LayoutInflater = this.getLayoutInflater()
+        val inflater: LayoutInflater = this.layoutInflater
         loading.setView(inflater.inflate(R.layout.custom_dialog_loading, null))
 
         // Displaying the dialog
@@ -99,10 +102,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, LocationListener
         alertDialog.show()
     }
 
-    override fun onClick(v: View?) {
-
-    }
-
-
+    private fun setCurrentFragment(fragment: Fragment)=
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.flFragment,fragment)
+            commit()
+        }
 
 }

@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import fr.iut.kotlin.androidproject.data.WeatherData
 import java.io.Serializable
 
 
@@ -65,5 +66,3 @@ class WeatherListAdapter(val context: Context, val list: MutableList<WeatherData
     }
 
 }
-
-data class WeatherData(var date: String, var icon : Int, var temp : Double, var minTemp : Int, var maxTemp : Int, var precipitation: Double, var windSpeed: Double) : Serializable

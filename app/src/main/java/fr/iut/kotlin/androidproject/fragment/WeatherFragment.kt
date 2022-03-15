@@ -12,9 +12,9 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.WeatherData
 import fr.iut.kotlin.androidproject.WeatherListAdapter
 import fr.iut.kotlin.androidproject.asyncTask.HttpOpenDataAsyncTask
+import fr.iut.kotlin.androidproject.data.WeatherData
 
 // TODO: Rename parameter arguments, choose names that match
 // the fr.iut.kotlin.androidproject.fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,7 +26,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [FirstFragment.newInstance] factory method to
  * create an instance of this fr.iut.kotlin.androidproject.fragment.
  */
-class FirstFragment(var location : Location, var alertDialog: AlertDialog) : Fragment() {
+class WeatherFragment(var location : Location, var alertDialog: AlertDialog) : Fragment() {
 
     private var URL_TIME_TEXT = "http://worldtimeapi.org/api/timezone/Europe/paris"
     private lateinit var fragmentView : View
@@ -44,7 +44,7 @@ class FirstFragment(var location : Location, var alertDialog: AlertDialog) : Fra
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.e("APPLOG-Fragment", "CreateView")
-        fragmentView = inflater.inflate(R.layout.fragment_first, container, false)
+        fragmentView = inflater.inflate(R.layout.fragment_weather, container, false)
 
         tvCommune = fragmentView.findViewById(R.id.tv_commune)
         lvWeatherInfo = fragmentView.findViewById(R.id.weather_list)
