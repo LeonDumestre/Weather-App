@@ -11,15 +11,6 @@ data class WeatherAllData(
     var solarRadiation: String
 )
 
-data class WeatherData(
-    var date: String,
-    var icon : Int,
-    var temp : Double,
-    var minTemp : Int,
-    var maxTemp : Int,
-    var precipitation: Double,
-    var windSpeed: Double
-    ) : Serializable
 
 data class CommuneLocation(
     var name : String,
