@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.WeatherListAdapter
+import fr.iut.kotlin.androidproject.data.CommuneLocation
 import fr.iut.kotlin.androidproject.data.WeatherAllData
 import fr.iut.kotlin.androidproject.data.WeatherData
 import org.json.JSONObject
@@ -24,24 +25,25 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
-class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
+class HttpOpenDataMapAsyncTask : AsyncTask<Any, Void, String>() {
 
-    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&q=&rows=100&sort=-forecast&q=not(%23null(total_water_precipitation))"
+    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&q=&rows=9999&sort=-forecast"
     private lateinit var location : Location
-    private lateinit var tvCommune : TextView
     private lateinit var alertDialog: AlertDialog
     private lateinit var adapter: WeatherListAdapter
     private lateinit var weatherList : MutableList<WeatherData>
-    private var commune : String = ""
+    private lateinit var communeList : MutableList<CommuneLocation>
 
     override fun doInBackground(vararg params: Any?): String {
         adapter = params[0] as WeatherListAdapter
         weatherList = params[1] as MutableList<WeatherData>
-        location = params[2] as Location
+        communeList = params[2] as MutableList<CommuneLocation>
         alertDialog = params[3] as AlertDialog
-        tvCommune = params[4] as TextView
 
-        val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
+        val finalHost = host + "&q=not(%23null(total_water_precipitation))+and+exact(commune," + communeList[0].name + ")"
+
+        for ()
+
         val url = URL(finalHost)
         val urlConnection = url.openConnection() as HttpURLConnection
         Log.e("APPLOG", finalHost)
@@ -64,9 +66,8 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         val records = JSONObject(result).getJSONArray("records")
 
         val weatherDataList : MutableList<WeatherAllData> = mutableListOf()
-        var hasCommune = false
         //Commence à 1 car la 1ère data est incomplète
-        for (i in 0 until 39) {
+        for (i in 1 until 40) {
             val item = records.getJSONObject(i).getJSONObject("fields")
 
             var date = ""
@@ -93,15 +94,8 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
             if (item.has("surface_net_solar_radiation"))
                 solarRadiation = BigDecimal(item.getString("surface_net_solar_radiation")).setScale(0, RoundingMode.HALF_EVEN).toString()
 
-            val wData = WeatherAllData(date, temperature, humidity, precipitation, windSpeed, solarRadiation)
+            val wData = WeatherAllData(date, commune, temperature, humidity, precipitation, windSpeed, solarRadiation)
             weatherDataList.add(wData)
-
-            if (!hasCommune && item.has("commune")) {
-                commune = item.getString("commune").toString()
-                tvCommune.visibility = View.VISIBLE
-                tvCommune.text = commune
-                hasCommune = true
-            }
         }
 
         val nightList : MutableList<WeatherAllData> = mutableListOf()       //0
@@ -114,7 +108,7 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
             when (getTimeZone(weatherDataList[i].date)) {
                 0 -> {
                     if (!firstVal && getTimeZone(weatherDataList[i-1].date) != getTimeZone(weatherDataList[i].date))
-                        addWeatherData(eveningList, "Soir")
+                        addWeatherData(eveningList, "Soir", )
                     nightList.add(weatherDataList[i])
                 }
                 1 -> {

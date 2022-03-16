@@ -6,6 +6,7 @@ import java.math.RoundingMode
 
 class WeatherData() {
     var date : String = ""
+    var commune : String = ""
     var icon : Int = 0
     var temp : Double = 0.0
     var minTemp : Int = 0
@@ -14,7 +15,7 @@ class WeatherData() {
     var windSpeed: Double = 0.0
 
 
-    constructor(list: MutableList<WeatherAllData>, period: String) : this() {
+    constructor(list: MutableList<WeatherAllData>, period: String, commune: String) : this() {
         var temp = 0.0
         var minTemp = list[0].temperature.toDouble()
         var maxTemp = list[0].temperature.toDouble()
@@ -44,6 +45,7 @@ class WeatherData() {
         }
 
         this.date = list[list.size-1].date.substringBefore('T') + " " + period
+        this.commune = commune
         this.icon = icon
         this.temp = BigDecimal(temp / list.size).setScale(1, RoundingMode.HALF_EVEN).toDouble()
         this.minTemp = BigDecimal(minTemp).setScale(0, RoundingMode.HALF_EVEN).toInt() -1
