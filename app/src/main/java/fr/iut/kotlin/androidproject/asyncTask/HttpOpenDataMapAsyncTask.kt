@@ -33,6 +33,7 @@ class HttpOpenDataMapAsyncTask : AsyncTask<Any, Void, String>() {
     private lateinit var adapter: WeatherListAdapter
     private lateinit var weatherList : MutableList<WeatherData>
     private lateinit var communeList : MutableList<CommuneLocation>
+    private var commune = ""
 
     override fun doInBackground(vararg params: Any?): String {
         adapter = params[0] as WeatherListAdapter
@@ -42,7 +43,7 @@ class HttpOpenDataMapAsyncTask : AsyncTask<Any, Void, String>() {
 
         val finalHost = host + "&q=not(%23null(total_water_precipitation))+and+exact(commune," + communeList[0].name + ")"
 
-        for ()
+        //for ()
 
         val url = URL(finalHost)
         val urlConnection = url.openConnection() as HttpURLConnection
@@ -70,9 +71,7 @@ class HttpOpenDataMapAsyncTask : AsyncTask<Any, Void, String>() {
         for (i in 1 until 40) {
             val item = records.getJSONObject(i).getJSONObject("fields")
 
-            var date = ""
-            if (item.has("forecast"))
-                date = item.getString("forecast")
+            var date = item.optString("forecast")
 
             var temperature = ""
             if (item.has("2_metre_temperature"))
@@ -94,7 +93,7 @@ class HttpOpenDataMapAsyncTask : AsyncTask<Any, Void, String>() {
             if (item.has("surface_net_solar_radiation"))
                 solarRadiation = BigDecimal(item.getString("surface_net_solar_radiation")).setScale(0, RoundingMode.HALF_EVEN).toString()
 
-            val wData = WeatherAllData(date, commune, temperature, humidity, precipitation, windSpeed, solarRadiation)
+            val wData = WeatherAllData(date, temperature, humidity, precipitation, windSpeed, solarRadiation)
             weatherDataList.add(wData)
         }
 

@@ -3,8 +3,6 @@ package fr.iut.kotlin.androidproject.fragment
 import android.graphics.Bitmap
 import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.location.Location
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -23,7 +21,7 @@ import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.data.CommuneLocation
 import kotlin.math.ln
 
-class MapsFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
+class MapFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
 
     private val communeList : List<CommuneLocation> = listOf(
         CommuneLocation("Brest", 48.390394, -4.486076),
@@ -88,7 +86,7 @@ class MapsFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+        return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

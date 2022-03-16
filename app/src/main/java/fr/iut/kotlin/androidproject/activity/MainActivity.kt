@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.fragment.MapsFragment
+import fr.iut.kotlin.androidproject.fragment.MapFragment
 import fr.iut.kotlin.androidproject.fragment.SettingsFragment
 import fr.iut.kotlin.androidproject.fragment.WeatherFragment
 
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
         val firstFragment= WeatherFragment(location, alertDialog)
-        val secondFragment= MapsFragment()
+        val secondFragment= MapFragment()
         val thirdFragment= SettingsFragment()
 
         setCurrentFragment(firstFragment)
