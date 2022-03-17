@@ -1,4 +1,4 @@
-package fr.iut.kotlin.androidproject.asyncTask
+package fr.iut.kotlin.androidproject
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -6,11 +6,7 @@ import android.location.Location
 import android.os.AsyncTask
 import android.os.Build
 import android.util.Log
-import android.view.View
-import android.widget.TextView
 import androidx.annotation.RequiresApi
-import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.WeatherListAdapter
 import fr.iut.kotlin.androidproject.data.CommuneLocation
 import fr.iut.kotlin.androidproject.data.WeatherAllData
 import fr.iut.kotlin.androidproject.data.WeatherData

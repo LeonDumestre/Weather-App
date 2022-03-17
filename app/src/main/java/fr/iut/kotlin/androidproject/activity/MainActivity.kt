@@ -21,60 +21,16 @@ import fr.iut.kotlin.androidproject.fragment.MapFragment
 import fr.iut.kotlin.androidproject.fragment.SettingsFragment
 import fr.iut.kotlin.androidproject.fragment.WeatherFragment
 
-class MainActivity : AppCompatActivity(), LocationListener {
-
-    private lateinit var location: Location
-    private lateinit var locationManager: LocationManager
-    private val locationPermissionCode = 2
-    private lateinit var alertDialog: AlertDialog
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        getLocation()
-    }
 
-    private fun getLocation() {
-        //Vérifier si la localisation est activée
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
-        } else {
-            setProgressDialog()
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000L, 100F, this)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == locationPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-                getLocation()
-            }
-            else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    override fun onLocationChanged(loc: Location) {
-        location = loc
-        Toast.makeText(
-            this,
-            "Latitude: " + location.latitude + " , Longitude: " + location.longitude,
-            Toast.LENGTH_LONG
-        ).show()
-        locationManager.removeUpdates(this)
-        setFragments()
-    }
-
-    private fun setFragments() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
-        val firstFragment= WeatherFragment(location, alertDialog)
+        val firstFragment= WeatherFragment()
         val secondFragment= MapFragment()
         val thirdFragment= SettingsFragment()
 
@@ -88,18 +44,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
             true
         }
-    }
-
-    @SuppressLint("SetTextI18n")
-    fun setProgressDialog() {
-        val loading: AlertDialog.Builder = AlertDialog.Builder(this)
-        loading.setCancelable(false)
-        val inflater: LayoutInflater = this.layoutInflater
-        loading.setView(inflater.inflate(R.layout.custom_dialog_loading, null))
-
-        // Displaying the dialog
-        alertDialog = loading.create()
-        alertDialog.show()
     }
 
     private fun setCurrentFragment(fragment: Fragment)=

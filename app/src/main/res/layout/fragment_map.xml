@@ -6,3 +6,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragment.MapFragment" />
+
+<!--
+
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.MapFragment" >
+
+    <RadioGroup
+        android:id="@+id/radio_group_list_selector"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:padding="4dp" >
+
+        <RadioButton
+            android:id="@+id/radioPopular"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="Matin"
+            android:gravity="center_horizontal|center_vertical"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/colorPrimaryLight" />
+        <View
+            android:layout_width="1dip"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryLight" />
+
+        <RadioButton
+            android:id="@+id/radioAZ"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="Après-midi"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/colorPrimaryLight" />
+
+        <View
+            android:layout_width="1dip"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryLight" />
+
+        <RadioButton
+            android:id="@+id/radioCategory"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="Soir"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="@color/colorPrimaryLight" />
+
+    </RadioGroup>
+</FrameLayout>
+
+-->

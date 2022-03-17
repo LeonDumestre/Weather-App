@@ -6,7 +6,7 @@ import java.math.RoundingMode
 
 class WeatherData() {
     var date : String = ""
-    var commune : String = ""
+    lateinit var communeLocation : CommuneLocation
     var icon : Int = 0
     var temp : Double = 0.0
     var minTemp : Int = 0
@@ -15,24 +15,24 @@ class WeatherData() {
     var windSpeed: Double = 0.0
 
 
-    constructor(list: MutableList<WeatherAllData>, period: String, commune: String) : this() {
+    constructor(list: MutableList<WeatherAllData>, period: String) : this() {
         var temp = 0.0
-        var minTemp = list[0].temperature.toDouble()
-        var maxTemp = list[0].temperature.toDouble()
+        var minTemp = list[0].`2_metre_temperature`
+        var maxTemp = list[0].`2_metre_temperature`
         var windSpeed = 0.0
 
         for (i in 0 until list.size) {
-            temp += list[i].temperature.toDouble()
-            if (list[i].temperature.toDouble() < minTemp)
-                minTemp = list[i].temperature.toDouble()
-            else if (list[i].temperature.toDouble() > maxTemp)
-                maxTemp = list[i].temperature.toDouble()
+            temp += list[i].`2_metre_temperature`.toDouble()
+            if (list[i].`2_metre_temperature`.toDouble() < minTemp)
+                minTemp = list[i].`2_metre_temperature`.toDouble()
+            else if (list[i].`2_metre_temperature`.toDouble() > maxTemp)
+                maxTemp = list[i].`2_metre_temperature`.toDouble()
 
-            windSpeed += list[i].windSpeed.toDouble()
+            windSpeed += list[i].wind_speed.toDouble()
         }
 
-        val solarRadiation = (list[list.size-1].solarRadiation.toDouble() - list[0].solarRadiation.toDouble()) / list.size
-        val precipitation = ((list[list.size-1].precipitation.toDouble() - list[0].precipitation.toDouble()) / list.size) / 4 * 24
+        val solarRadiation = (list[list.size-1].surface_net_solar_radiation - list[0].surface_net_solar_radiation) / list.size
+        val precipitation = ((list[list.size-1].total_water_precipitation - list[0].total_water_precipitation) / list.size) / 4 * 24
 
         val icon: Int = when {
             solarRadiation > 2000000 -> R.drawable.ic_sun
@@ -44,13 +44,14 @@ class WeatherData() {
             else -> R.drawable.ic_moon_cloud
         }
 
-        this.date = list[list.size-1].date.substringBefore('T') + " " + period
-        this.commune = commune
+        //TODO Date UTC ?
+        this.date = list[list.size-1].forecast.substringBefore('T') + " " + period
+        this.communeLocation = list[list.size - 1].commune_location
         this.icon = icon
         this.temp = BigDecimal(temp / list.size).setScale(1, RoundingMode.HALF_EVEN).toDouble()
         this.minTemp = BigDecimal(minTemp).setScale(0, RoundingMode.HALF_EVEN).toInt() -1
         this.maxTemp = BigDecimal(maxTemp).setScale(0, RoundingMode.HALF_EVEN).toInt() +1
-        this.precipitation = list[list.size - 1].precipitation.toDouble() - list[0].precipitation.toDouble()
+        this.precipitation = list[list.size - 1].total_water_precipitation - list[0].total_water_precipitation
         this.windSpeed = windSpeed / list.size
 
     }
