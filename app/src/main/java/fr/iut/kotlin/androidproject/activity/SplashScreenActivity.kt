@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,6 +26,7 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
@@ -32,7 +34,11 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
         val progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
         progressBar.isIndeterminate = true
 
+        val tvLoading = findViewById<TextView>(R.id.loading_text)
+        tvLoading.text = "Chargement de la position..."
         getLastLocation()
+
+        tvLoading.text = "Chargement des données..."
         HttpOpenDataAsyncTask().execute(this)
     }
 
@@ -95,12 +101,6 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun createMyLocationSingleton(location: Location) {
-        Toast.makeText(
-            this,
-            "Latitude: " + location.latitude + " , Longitude: " + location.longitude,
-            Toast.LENGTH_LONG
-        ).show()
-
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses: List<Address> = geocoder.getFromLocation(location.latitude, location.longitude, 1)
         MyLocationSingleton.add(addresses[0].locality, location.latitude, location.longitude)

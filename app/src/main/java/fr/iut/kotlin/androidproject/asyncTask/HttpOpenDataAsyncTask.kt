@@ -32,6 +32,7 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     override fun doInBackground(vararg params: Any?): String {
         splashScreenActivity = WeakReference<SplashScreenActivity>(params[0] as SplashScreenActivity?)
 
+        Log.e("APPLOG", "Début des requêtes")
         //val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
         for (item in communeList) {
             val finalHost = host + "%23exact(commune,\"" + item.commune + "\")"
@@ -43,7 +44,7 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
             }
             urlConnection.disconnect()
         }
-        Log.e("APPLOG", "Fin des requests")
+        Log.e("APPLOG", "Fin des requêtes")
         return ""
     }
 

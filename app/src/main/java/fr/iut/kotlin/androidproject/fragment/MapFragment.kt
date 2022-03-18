@@ -3,29 +3,28 @@ package fr.iut.kotlin.androidproject.fragment
 import android.graphics.Bitmap
 import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.BitmapFactory
-
-import androidx.fragment.app.Fragment
-
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory.fromBitmap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-
+import com.google.maps.android.data.geojson.GeoJsonLayer
 import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.utils.WeatherSingleton
 import kotlin.math.ln
 
-class MapFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
+
+class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
     private val callback = OnMapReadyCallback { googleMap ->
         googleMap.uiSettings.isZoomControlsEnabled = false
@@ -35,6 +34,18 @@ class MapFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
         val center = LatLng(46.227638, 2.213749)
         val zoomLevel = (ln(40000 / (600000.0f * 3.5 / 1000 / 2)) / ln(2.0)).toFloat()
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center, zoomLevel))
+
+        val static = LatLngBounds(center, center)
+        googleMap.setLatLngBoundsForCameraTarget(static)
+
+        val layer = GeoJsonLayer(googleMap, R.raw.border, this.context)
+
+        val style = layer.defaultPolygonStyle
+        style.fillColor = Color.LTGRAY
+        style.strokeColor = Color.BLACK
+        style.strokeWidth = 2f
+
+        layer.addLayerToMap()
 
         var currentCommune = ""
         for (item in WeatherSingleton.weatherList) {
@@ -67,7 +78,7 @@ class MapFragment() : Fragment(), GoogleMap.OnMarkerClickListener {
     }
 
     override fun onMarkerClick(m: Marker): Boolean {
-        Toast.makeText(activity, "Marker Click", Toast.LENGTH_SHORT).show()
-        return false
+
+        return true
     }
 }
