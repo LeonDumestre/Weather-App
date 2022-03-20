@@ -103,7 +103,7 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
     private fun createMyLocationSingleton(location: Location) {
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses: List<Address> = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-        MyLocationSingleton.add(addresses[0].locality, location.latitude, location.longitude)
+        MyLocationSingleton.addLocation(addresses[0].locality, location.latitude, location.longitude)
     }
 
 }

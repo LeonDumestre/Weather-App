@@ -23,7 +23,7 @@ class WeatherFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        adapter = WeatherListAdapter(activity as Context, WeatherSingleton.weatherList)
+        adapter = WeatherListAdapter(activity as Context, MyLocationSingleton.weatherList)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

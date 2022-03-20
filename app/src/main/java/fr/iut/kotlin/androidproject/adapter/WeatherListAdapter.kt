@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import fr.iut.kotlin.androidproject.data.WeatherData
 import java.io.Serializable
 
@@ -46,6 +48,7 @@ class WeatherListAdapter(val context: Context, val list: MutableList<WeatherData
         notifyDataSetChanged()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("ViewHolder", "SetTextI18n")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = LayoutInflater.from(context).inflate(R.layout.adapter_weather_list, parent, false)
@@ -57,7 +60,7 @@ class WeatherListAdapter(val context: Context, val list: MutableList<WeatherData
         tvMaxTemp = view.findViewById(R.id.weather_max_temperature)
 
         ivImage.setImageResource(list[position].icon)
-        tvDate.text = list[position].date
+        tvDate.text = list[position].date.dayOfMonth.toString() + "/" + list[position].date.month.toString() + "/" + list[position].date.year.toString()
         tvTemp.text = list[position].temp.toString() + "°C"
         tvMinTemp.text = "Min : " + list[position].minTemp + "°C"
         tvMaxTemp.text = "Max : " + list[position].maxTemp + "°C"

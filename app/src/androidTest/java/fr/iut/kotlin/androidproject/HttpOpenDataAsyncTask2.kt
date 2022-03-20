@@ -23,7 +23,7 @@ import java.time.ZoneOffset
 
 class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
-    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=9999&sort=-forecast&q=not(%23null(total_water_precipitation))"
+    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=9999&sort=-forecast&q=not(%23null(total_water_precipitation))+AND+"
     private var jsonList : MutableList<String> = mutableListOf()
     private var tmpList : MutableList<WeatherAllData> = mutableListOf()
     private val communeList = CommuneSingleton.list
@@ -35,19 +35,50 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         Log.e("APPLOG", "Début des requêtes")
 
         //Requête de ma localisation
-        var finalHost = host + "&geofilter.distance=" + MyLocationSingleton.latitude + "," + MyLocationSingleton.longitude + ",1500"
+        var finalHost = host + "%23exact(commune,\"" + MyLocationSingleton.commune + "\")"
         var urlConnection = URL(finalHost).openConnection() as HttpURLConnection
         if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
             val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
-            jsonList.add(input.readLine())
+            Log.e("APPLOG", "Requête MyLocation")
+            if (JSONObject(input.readLine()).optString("nhits") == "0") {
+                //TODO Rechercher en fonction de la localisation si la ville n'existe pas
+                //val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
+            } else {
+                jsonList.add(input.readLine())
+            }
             input.close()
         }
         urlConnection.disconnect()
 
         //TODO il en manque
         //Requêtes des principales villes de France
-        for (item in communeList)  {
-            finalHost = host + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",1500"
+        var nb = 0
+        for (i in communeList.indices)  {
+            if (nb == 0) {
+                finalHost = "$host("
+            }
+            if (nb <= 4) {
+                finalHost += "%23exact(commune," + communeList[i].commune + ")"
+                if (nb < 4)
+                    finalHost += "+OR+"
+                nb++
+            }
+            else {
+                finalHost += ")"
+                Log.e("APPLOG", "Requête $i : $finalHost")
+                urlConnection = URL(finalHost).openConnection() as HttpURLConnection
+                if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
+                    jsonList.add(input.readLine())
+                    input.close()
+                }
+                urlConnection.disconnect()
+                nb = 0
+            }
+        }
+        //Envoie de la dernière requêtes des principales villes
+        if (nb > 0) {
+            finalHost += ")"
             urlConnection = URL(finalHost).openConnection() as HttpURLConnection
             if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
                 val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
@@ -55,7 +86,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
                 input.close()
             }
             urlConnection.disconnect()
-
         }
 
         Log.e("APPLOG", "Fin des requêtes")
@@ -67,6 +97,7 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onPostExecute(result: String?) {
 
+
         for (jsonItem in jsonList) {
             val nhits = JSONObject(jsonItem).optString("nhits")
 
@@ -77,7 +108,6 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
                 while (indData < nhits.toInt()) {
                     val period = getPeriod((records.getJSONObject(indData).getJSONObject("fields").optString("forecast")))
-
                     while (period == getPeriod(records.getJSONObject(indData).getJSONObject("fields").optString("forecast"))) {
                         val item = records.getJSONObject(indData).getJSONObject("fields")
                         val wData = WeatherAllData(

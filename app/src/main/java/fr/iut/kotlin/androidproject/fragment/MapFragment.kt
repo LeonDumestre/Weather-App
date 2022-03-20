@@ -47,6 +47,7 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
 
         layer.addLayerToMap()
 
+        /*
         var currentCommune = ""
         for (item in WeatherSingleton.weatherList) {
             if (currentCommune != item.communeLocation.commune) {
@@ -61,6 +62,7 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             }
         }
         googleMap.setOnMarkerClickListener(this)
+        */
     }
 
     override fun onCreateView(
