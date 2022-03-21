@@ -21,9 +21,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
-class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
+class OneDataAsyncTask : AsyncTask<Any, Void, String>() {
 
-    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=9999&sort=-forecast&q=not(%23null(total_water_precipitation))+AND+"
+    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=39&sort=-forecast&q=not(%23null(total_water_precipitation))"
     private var jsonList : MutableList<String> = mutableListOf()
     private var tmpList : MutableList<WeatherAllData> = mutableListOf()
     private val communeList = CommuneSingleton.list
@@ -35,50 +35,20 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
         Log.e("APPLOG", "Début des requêtes")
 
         //Requête de ma localisation
-        var finalHost = host + "%23exact(commune,\"" + MyLocationSingleton.commune + "\")"
+        var finalHost = host + "&geofilter.distance=" + MyLocationSingleton.latitude + "," + MyLocationSingleton.longitude + ",964"
         var urlConnection = URL(finalHost).openConnection() as HttpURLConnection
         if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
             val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
-            Log.e("APPLOG", "Requête MyLocation")
-            if (JSONObject(input.readLine()).optString("nhits") == "0") {
-                //TODO Rechercher en fonction de la localisation si la ville n'existe pas
-                //val finalHost = host + "&geofilter.distance=" + location.latitude + "," + location.longitude + ",1500"
-            } else {
-                jsonList.add(input.readLine())
-            }
+            jsonList.add(input.readLine())
             input.close()
         }
         urlConnection.disconnect()
 
         //TODO il en manque
         //Requêtes des principales villes de France
-        var nb = 0
-        for (i in communeList.indices)  {
-            if (nb == 0) {
-                finalHost = "$host("
-            }
-            if (nb <= 4) {
-                finalHost += "%23exact(commune," + communeList[i].commune + ")"
-                if (nb < 4)
-                    finalHost += "+OR+"
-                nb++
-            }
-            else {
-                finalHost += ")"
-                Log.e("APPLOG", "Requête $i : $finalHost")
-                urlConnection = URL(finalHost).openConnection() as HttpURLConnection
-                if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
-                    val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
-                    jsonList.add(input.readLine())
-                    input.close()
-                }
-                urlConnection.disconnect()
-                nb = 0
-            }
-        }
-        //Envoie de la dernière requêtes des principales villes
-        if (nb > 0) {
-            finalHost += ")"
+        for (item in communeList)  {
+            finalHost = host + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",1100"
+            Log.e("APPLOG", finalHost)
             urlConnection = URL(finalHost).openConnection() as HttpURLConnection
             if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
                 val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
@@ -97,51 +67,57 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onPostExecute(result: String?) {
 
-
         for (jsonItem in jsonList) {
             val nhits = JSONObject(jsonItem).optString("nhits")
-
-            var indData = 0
             if (nhits.toInt() > 0) {
                 val records = JSONObject(jsonItem).getJSONArray("records")
                 val firstDay = getDay(records.getJSONObject(1).getJSONObject("fields").optString("forecast"))
+                var nbData = 0
 
-                while (indData < nhits.toInt()) {
-                    val period = getPeriod((records.getJSONObject(indData).getJSONObject("fields").optString("forecast")))
-                    while (period == getPeriod(records.getJSONObject(indData).getJSONObject("fields").optString("forecast"))) {
-                        val item = records.getJSONObject(indData).getJSONObject("fields")
-                        val wData = WeatherAllData(
-                            CommuneSingleton.getCommuneLocation(item.optString("commune")),
-                            item.optString("forecast"),
-                            item.optDouble("2_metre_temperature"),
-                            item.optDouble("maximum_temperature_at_2_metres"),
-                            item.optDouble("minimum_temperature_at_2_metres"),
-                            item.optDouble("relative_humidity"),
-                            item.optInt("surface_net_solar_radiation"),
-                            item.optDouble("total_water_precipitation"),
-                            item.optDouble("wind_speed")
+                while (nbData < 39) {
+                    val period = getPeriod(records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
+
+                    Log.d("APPLOG", "PERIOD = $period")
+                    while (nbData < 39 &&
+                        period == getPeriod((records.getJSONObject(nbData).getJSONObject("fields").optString("forecast")))
+                            ) {
+                        Log.d("APPLOG", "current date : " + records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
+                        val item = records.getJSONObject(nbData).getJSONObject("fields")
+                        tmpList.add(
+                            WeatherAllData(
+                                CommuneSingleton.getCommuneLocation(item.optString("commune")),
+                                item.optString("forecast"),
+                                item.optDouble("2_metre_temperature"),
+                                item.optDouble("maximum_temperature_at_2_metres"),
+                                item.optDouble("minimum_temperature_at_2_metres"),
+                                item.optDouble("relative_humidity"),
+                                item.optInt("surface_net_solar_radiation"),
+                                item.optDouble("total_water_precipitation"),
+                                item.optDouble("wind_speed")
+                            )
                         )
-                        indData = getWeatherDataByForecast(jsonItem, wData, indData)
+                        Log.e("APPLOG", ""+nbData)
+                        nbData++
                     }
 
-                    //TODO inititialiser les listes d'objets ?
                     if (tmpList.size > 0) {
-                        val realDay = getDay(tmpList[0].forecast)
+                        val realDay = getDay(tmpList[tmpList.size-1].forecast)
                         val indDay = realDay - firstDay
                         if (WeatherSingleton.weatherList.isEmpty() || WeatherSingleton.weatherList.size <= indDay) {
-                            WeatherSingleton.weatherList.add(DayWeather)
+                            WeatherSingleton.weatherList.add(DayWeather())
                             WeatherSingleton.weatherList[indDay].day = realDay
                         }
                         if (WeatherSingleton.weatherList[indDay].dayList.isEmpty() || WeatherSingleton.weatherList[indDay].dayList.size <= period) {
-                            WeatherSingleton.weatherList[indDay].dayList.add(PeriodWeather)
+                            WeatherSingleton.weatherList[indDay].dayList.add(PeriodWeather())
                             WeatherSingleton.weatherList[indDay].dayList[period].period = period
                         }
-                        Log.e("APPLOG", "day = " + indDay)
-                        Log.e("APPLOG", "period = " + period)
+                        Log.e("APPLOG", "day = $indDay")
+                        Log.e("APPLOG", "period = $period")
                         WeatherSingleton.weatherList[indDay].dayList[period].periodList.add(WeatherData(tmpList, period))
                         tmpList.clear()
                     }
                 }
+
             }
         }
         startMainActivity()

@@ -5,18 +5,22 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.*
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.asyncTask.HttpOpenDataAsyncTask
+import fr.iut.kotlin.androidproject.asyncTask.AllDataAsyncTask
 import fr.iut.kotlin.androidproject.utils.MyLocationSingleton
 import java.util.*
 
@@ -25,40 +29,62 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
 
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
+    private lateinit var tvLoading : TextView
+    private lateinit var progressBar : ProgressBar
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 
-        val progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
+        tvLoading = findViewById(R.id.loading_text)
+        progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
         progressBar.isIndeterminate = true
 
-        val tvLoading = findViewById<TextView>(R.id.loading_text)
-        tvLoading.text = "Chargement de la position..."
-        getLastLocation()
+        tvLoading.text = "Vérification de la connexion..."
+        val connected = isOnline()
 
-        tvLoading.text = "Chargement des données..."
-        HttpOpenDataAsyncTask().execute(this)
+        if (connected) {
+            tvLoading.text = "Chargement de la position..."
+            getLastLocation()
+
+            tvLoading.text = "Chargement des données..."
+            AllDataAsyncTask().execute(this)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun isOnline(): Boolean {
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connectivityManager != null) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                when {
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                        Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     private fun getLastLocation() {
         var fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -69,7 +95,6 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
             }
         }
     }
-
 
     private fun getCurrentLocation() {
         //Vérifier si la localisation est activée

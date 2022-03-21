@@ -6,12 +6,12 @@ object WeatherSingleton {
     var weatherList : MutableList<DayWeather> = arrayListOf()
 }
 
-object DayWeather {
-    var day : Int = -1
+data class DayWeather (
+    var day : Int = -1,
     var dayList : MutableList<PeriodWeather> = arrayListOf()
-}
+)
 
-object PeriodWeather {
-    var period : Int = -1
+data class PeriodWeather (
+    var period : Int = -1,
     var periodList : MutableList<WeatherData> = arrayListOf()
-}
+)

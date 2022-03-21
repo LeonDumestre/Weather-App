@@ -2,6 +2,7 @@ package fr.iut.kotlin.androidproject.fragment
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +24,7 @@ class WeatherFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        adapter = WeatherListAdapter(activity as Context, MyLocationSingleton.weatherList)
+        adapter = WeatherListAdapter(activity as Context, WeatherSingleton.weatherList[0].dayList[0].periodList)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -33,6 +34,12 @@ class WeatherFragment : Fragment() {
         tvCommune.text = MyLocationSingleton.commune
         lvWeatherInfo = fragmentView.findViewById(R.id.weather_list)
         lvWeatherInfo.adapter = adapter
+
+        for (i in 0 until WeatherSingleton.weatherList.size) {
+            for (j in 0 until WeatherSingleton.weatherList[i].dayList.size) {
+                Log.i("APPLOG", "day: " + i + " / period: " + j + " -> " + WeatherSingleton.weatherList[i].dayList[j].periodList.size)
+            }
+        }
 
         return fragmentView
     }

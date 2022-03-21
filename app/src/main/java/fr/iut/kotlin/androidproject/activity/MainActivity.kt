@@ -1,20 +1,9 @@
 package fr.iut.kotlin.androidproject.activity
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.AlertDialog
-import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.fragment.MapFragment
@@ -27,29 +16,42 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val bnv = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        val fm: FragmentManager = supportFragmentManager
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        val weatherFragment = WeatherFragment()
+        val mapFragment = MapFragment()
+        val settingsFragment = SettingsFragment()
 
-        val firstFragment= WeatherFragment()
-        val secondFragment= MapFragment()
-        val thirdFragment= SettingsFragment()
+        var active: Fragment = weatherFragment
 
-        setCurrentFragment(firstFragment)
+        fm.beginTransaction().add(R.id.flFragment, settingsFragment, "Settings").hide(settingsFragment).commit();
+        fm.beginTransaction().add(R.id.flFragment, mapFragment, "Map").hide(mapFragment).commit();
+        fm.beginTransaction().add(R.id.flFragment, weatherFragment, "Weather").commit();
 
-        bottomNavigationView.setOnNavigationItemSelectedListener {
-            when(it.itemId){
-                R.id.location ->setCurrentFragment(firstFragment)
-                R.id.map ->setCurrentFragment(secondFragment)
-                R.id.settings ->setCurrentFragment(thirdFragment)
+        bnv.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.location -> {
+                    fm.beginTransaction().hide(active).show(weatherFragment).commit()
+                    active = weatherFragment
+                    it.isChecked = true
+                    true
+                }
+                R.id.map -> {
+                    fm.beginTransaction().hide(active).show(mapFragment).commit()
+                    active = mapFragment
+                    it.isChecked = true
+                    true
+                }
+                R.id.settings -> {
+                    fm.beginTransaction().hide(active).show(settingsFragment).commit()
+                    active = settingsFragment
+                    it.isChecked = true
+                    true
+                }
             }
-            true
+            false
         }
     }
-
-    private fun setCurrentFragment(fragment: Fragment)=
-        supportFragmentManager.beginTransaction().apply {
-            replace(R.id.flFragment,fragment)
-            commit()
-        }
 
 }

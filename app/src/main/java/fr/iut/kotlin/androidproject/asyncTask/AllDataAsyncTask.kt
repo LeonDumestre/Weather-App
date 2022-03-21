@@ -21,9 +21,11 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
-class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
+class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
 
-    private val host : String = "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=9999&sort=-forecast&q=not(%23null(total_water_precipitation))"
+    private val MAX_DATA = 39
+    private val HOST : String =
+        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=$MAX_DATA&sort=-forecast&q=not(%23null(total_water_precipitation))"
     private var jsonList : MutableList<String> = mutableListOf()
     private var tmpList : MutableList<WeatherAllData> = mutableListOf()
     private val communeList = CommuneSingleton.list
@@ -34,28 +36,17 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
         Log.e("APPLOG", "Début des requêtes")
 
-        //Requête de ma localisation
-        var finalHost = host + "&geofilter.distance=" + MyLocationSingleton.latitude + "," + MyLocationSingleton.longitude + ",1500"
-        var urlConnection = URL(finalHost).openConnection() as HttpURLConnection
-        if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
-            val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
-            jsonList.add(input.readLine())
-            input.close()
-        }
-        urlConnection.disconnect()
-
-        //TODO il en manque
         //Requêtes des principales villes de France
         for (item in communeList)  {
-            finalHost = host + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",1500"
-            urlConnection = URL(finalHost).openConnection() as HttpURLConnection
+            val finalHOST = HOST + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",964"
+            Log.e("APPLOG", finalHOST)
+            val urlConnection = URL(finalHOST).openConnection() as HttpURLConnection
             if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
                 val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
                 jsonList.add(input.readLine())
                 input.close()
             }
             urlConnection.disconnect()
-
         }
 
         Log.e("APPLOG", "Fin des requêtes")
@@ -69,83 +60,59 @@ class HttpOpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
         for (jsonItem in jsonList) {
             val nhits = JSONObject(jsonItem).optString("nhits")
-
-            var indData = 0
             if (nhits.toInt() > 0) {
                 val records = JSONObject(jsonItem).getJSONArray("records")
                 val firstDay = getDay(records.getJSONObject(1).getJSONObject("fields").optString("forecast"))
+                var nbData = 0
 
-                while (indData < nhits.toInt()) {
-                    val period = getPeriod((records.getJSONObject(indData).getJSONObject("fields").optString("forecast")))
+                while (nbData < MAX_DATA) {
+                    val period = getPeriod(records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
 
-                    while (period == getPeriod(records.getJSONObject(indData).getJSONObject("fields").optString("forecast"))) {
-                        val item = records.getJSONObject(indData).getJSONObject("fields")
-                        val wData = WeatherAllData(
-                            CommuneSingleton.getCommuneLocation(item.optString("commune")),
-                            item.optString("forecast"),
-                            item.optDouble("2_metre_temperature"),
-                            item.optDouble("maximum_temperature_at_2_metres"),
-                            item.optDouble("minimum_temperature_at_2_metres"),
-                            item.optDouble("relative_humidity"),
-                            item.optInt("surface_net_solar_radiation"),
-                            item.optDouble("total_water_precipitation"),
-                            item.optDouble("wind_speed")
+                    //Log.d("APPLOG", "PERIOD = $period")
+                    while (nbData < MAX_DATA &&
+                        period == getPeriod((records.getJSONObject(nbData).getJSONObject("fields").optString("forecast")))
+                    ) {
+                        //Log.d("APPLOG", "current date : " + records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
+                        val item = records.getJSONObject(nbData).getJSONObject("fields")
+                        tmpList.add(
+                            WeatherAllData(
+                                CommuneSingleton.getCommuneLocation(item.optString("commune")),
+                                item.optString("forecast"),
+                                item.optDouble("2_metre_temperature"),
+                                item.optDouble("maximum_temperature_at_2_metres"),
+                                item.optDouble("minimum_temperature_at_2_metres"),
+                                item.optDouble("relative_humidity"),
+                                item.optInt("surface_net_solar_radiation"),
+                                item.optDouble("total_water_precipitation"),
+                                item.optDouble("wind_speed")
+                            )
                         )
-                        indData = getWeatherDataByForecast(jsonItem, wData, indData)
+                        //Log.e("APPLOG", ""+nbData)
+                        nbData++
                     }
 
-                    //TODO inititialiser les listes d'objets ?
                     if (tmpList.size > 0) {
-                        val realDay = getDay(tmpList[0].forecast)
+                        val realDay = getDay(tmpList[tmpList.size-1].forecast)
                         val indDay = realDay - firstDay
                         if (WeatherSingleton.weatherList.isEmpty() || WeatherSingleton.weatherList.size <= indDay) {
-                            WeatherSingleton.weatherList.add(DayWeather)
+                            WeatherSingleton.weatherList.add(DayWeather())
                             WeatherSingleton.weatherList[indDay].day = realDay
                         }
                         if (WeatherSingleton.weatherList[indDay].dayList.isEmpty() || WeatherSingleton.weatherList[indDay].dayList.size <= period) {
-                            WeatherSingleton.weatherList[indDay].dayList.add(PeriodWeather)
+                            WeatherSingleton.weatherList[indDay].dayList.add(PeriodWeather())
                             WeatherSingleton.weatherList[indDay].dayList[period].period = period
                         }
-                        Log.e("APPLOG", "day = " + indDay)
-                        Log.e("APPLOG", "period = " + period)
+                        Log.e("APPLOG", "day = $indDay")
+                        Log.e("APPLOG", "period = $period")
                         WeatherSingleton.weatherList[indDay].dayList[period].periodList.add(WeatherData(tmpList, period))
+                        Log.i("APPLOG", "commune : " +  WeatherSingleton.weatherList[indDay].dayList[period].periodList[WeatherSingleton.weatherList[indDay].dayList[period].periodList.size-1].communeLocation.commune)
                         tmpList.clear()
                     }
                 }
+
             }
         }
         startMainActivity()
-    }
-
-    private fun getWeatherDataByForecast(jsonItem : String, wData : WeatherAllData, indFirstData : Int) : Int {
-        var indData = indFirstData
-        var nbData = 1
-        val records = JSONObject(jsonItem).getJSONArray("records")
-        nbData++
-        indData++
-
-        while (wData.forecast == records.getJSONObject(indData).getJSONObject("fields").optString("forecast")) {
-            val item = records.getJSONObject(indData).getJSONObject("fields")
-            wData.`2_metre_temperature` += item.optDouble("2_metre_temperature")
-            wData.maximum_temperature_at_2_metres += item.optDouble("maximum_temperature_at_2_metres")
-            wData.minimum_temperature_at_2_metres += item.optDouble("minimum_temperature_at_2_metres")
-            wData.relative_humidity += item.optDouble("relative_humidity")
-            wData.surface_net_solar_radiation += item.optInt("surface_net_solar_radiation")
-            wData.total_water_precipitation += item.optDouble("total_water_precipitation")
-            wData.wind_speed += item.optDouble("wind_speed")
-            nbData++
-            indData++
-        }
-        wData.`2_metre_temperature` /= nbData
-        wData.maximum_temperature_at_2_metres /= nbData
-        wData.minimum_temperature_at_2_metres /= nbData
-        wData.relative_humidity /= nbData
-        wData.surface_net_solar_radiation /= nbData
-        wData.total_water_precipitation /= nbData
-        wData.wind_speed /= nbData
-        tmpList.add(wData)
-
-        return indData
     }
 
 

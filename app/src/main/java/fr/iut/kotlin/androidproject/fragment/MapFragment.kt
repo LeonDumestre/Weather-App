@@ -5,6 +5,7 @@ import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,10 +47,27 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
         style.strokeWidth = 2f
 
         layer.addLayerToMap()
+        setMarkers(googleMap)
+    }
 
-        /*
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        Log.e("APPLOG", "onCreateView")
+        return inflater.inflate(R.layout.fragment_map, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync(callback)
+    }
+
+    fun setMarkers(googleMap: GoogleMap) {
         var currentCommune = ""
-        for (item in WeatherSingleton.weatherList) {
+        for (item in WeatherSingleton.weatherList[0].dayList[1].periodList) {
             if (currentCommune != item.communeLocation.commune) {
                 val icon: Bitmap = BitmapFactory.decodeResource(resources, item.icon)
                 googleMap.addMarker(
@@ -62,21 +80,6 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
             }
         }
         googleMap.setOnMarkerClickListener(this)
-        */
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_map, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
     }
 
     override fun onMarkerClick(m: Marker): Boolean {
