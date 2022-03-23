@@ -10,11 +10,13 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -43,9 +45,26 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
         progressBar.isIndeterminate = true
 
         tvLoading.text = "Vérification de la connexion..."
-        val connected = isOnline()
 
-        if (connected) {
+        if (isOnline()) {
+            tvLoading.text = "Chargement de la position..."
+            getLastLocation()
+
+            tvLoading.text = "Chargement des données..."
+            AllDataAsyncTask().execute(this)
+        } else {
+            //TODO alertDialog ne s'affiche pas
+            val alertDialog : AlertDialog
+            val loading: AlertDialog.Builder = AlertDialog.Builder(this)
+            loading.setCancelable(false)
+            val inflater: LayoutInflater = this.layoutInflater
+            loading.setView(inflater.inflate(R.layout.custom_dialog_loading, null))
+
+            alertDialog = loading.create()
+            alertDialog.show()
+
+            while (!isOnline()) { }
+            alertDialog.dismiss()
             tvLoading.text = "Chargement de la position..."
             getLastLocation()
 
