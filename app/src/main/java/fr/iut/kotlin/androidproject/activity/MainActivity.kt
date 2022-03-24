@@ -1,6 +1,7 @@
 package fr.iut.kotlin.androidproject.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -9,6 +10,7 @@ import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.fragment.MapFragment
 import fr.iut.kotlin.androidproject.fragment.SettingsFragment
 import fr.iut.kotlin.androidproject.fragment.WeatherFragment
+import fr.iut.kotlin.androidproject.utils.MyLocationSingleton
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity() {
                     active = settingsFragment
                     it.isChecked = true
                     true
+                    Log.e("APPLOG", MyLocationSingleton.commune + " " + MyLocationSingleton.latitude + " " + MyLocationSingleton.longitude)
                 }
             }
             false

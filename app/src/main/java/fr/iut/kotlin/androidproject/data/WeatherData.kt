@@ -1,6 +1,7 @@
 package fr.iut.kotlin.androidproject.data
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import fr.iut.kotlin.androidproject.R
 import fr.iut.kotlin.androidproject.utils.MyLocationSingleton
@@ -39,7 +40,8 @@ class WeatherData() {
 
             windSpeed += list[i].wind_speed
         }
-//total_water_precipitation : 10ème de pouces/heure
+
+        //total_water_precipitation : 10ème de pouces/heure
         //x / 40 * 24 et ça donne des cm
         val solarRadiation = (list[list.size-1].surface_net_solar_radiation - list[0].surface_net_solar_radiation) / list.size
         val precipitation = ((list[list.size-1].total_water_precipitation - list[0].total_water_precipitation) / list.size) / 4 * 24
@@ -63,6 +65,8 @@ class WeatherData() {
         this.maxTemp = BigDecimal(maxTemp).setScale(0, RoundingMode.HALF_EVEN).toInt() +1
         this.precipitation = list[list.size - 1].total_water_precipitation - list[0].total_water_precipitation
         this.windSpeed = windSpeed / list.size
+
+        Log.e("APPLOG", this.communeLocation.toString())
     }
 
 }

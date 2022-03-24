@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import fr.iut.kotlin.androidproject.activity.MainActivity
 import fr.iut.kotlin.androidproject.activity.SplashScreenActivity
+import fr.iut.kotlin.androidproject.data.CommuneLocation
 import fr.iut.kotlin.androidproject.data.WeatherAllData
 import fr.iut.kotlin.androidproject.data.WeatherData
 import fr.iut.kotlin.androidproject.utils.*
@@ -21,7 +22,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
-class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
+class OpenDataAsyncTask : AsyncTask<Any, Void, String>() {
 
     private val HOST : String =
         "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=500&sort=-forecast&q=not(%23null(total_water_precipitation))"
@@ -31,10 +32,11 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
 
     override fun doInBackground(vararg params: Any?): String {
         splashScreenActivity = WeakReference<SplashScreenActivity>(params[0] as SplashScreenActivity?)
+        val myLocation : CommuneLocation = params[1] as CommuneLocation
 
         Log.e("APPLOG", "Début des requêtes")
 
-        var finalHOST = HOST + "&geofilter.distance=" + MyLocationSingleton.latitude + "," + MyLocationSingleton.longitude + ",1300"
+        var finalHOST = HOST + "&geofilter.distance=" + myLocation.latitude + "," + myLocation.longitude + ",1500"
         Log.e("APPLOG", finalHOST)
         var urlConnection = URL(finalHOST).openConnection() as HttpURLConnection
         if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
@@ -70,11 +72,11 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
         for (jsonItem in jsonList) {
             val tmpList : MutableList<WeatherAllData> = mutableListOf()
             val nhits = JSONObject(jsonItem).optString("nhits")
+
             if (nhits.toInt() > 0) {
                 val records = JSONObject(jsonItem).getJSONArray("records")
                 var ind = 0
-                Log.e("APPLOG", "records : " + records.length())
-                Log.e("APPLOG", "nhits : $nhits")
+
                 while (ind < nhits.toInt()) {
                     val item = records.getJSONObject(ind).getJSONObject("fields")
                     if (tmpList.size == 0 || item.optString("forecast") != tmpList[tmpList.size - 1].forecast) {
@@ -104,7 +106,7 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
     private fun initWeatherSingleton() {
         val date = LocalDateTime.now()
         for (day in 0 until 2) {
-            WeatherSingleton.weatherList.add(DayWeather(date.dayOfMonth, date.month.toString()))
+            WeatherSingleton.weatherList.add(DayWeather(date.plusDays(day.toLong()).dayOfMonth, date.plusDays(day.toLong()).month.toString()))
             for (period in 0 until 4) {
                 var strPeriod = ""
                 when (period) {

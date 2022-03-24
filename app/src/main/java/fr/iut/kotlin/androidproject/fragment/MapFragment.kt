@@ -1,5 +1,6 @@
 package fr.iut.kotlin.androidproject.fragment
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.BitmapFactory
@@ -65,6 +66,7 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         setMarkers()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         fragmentView = inflater.inflate(R.layout.fragment_map, container, false)
         btn_day1 = fragmentView.findViewById(R.id.map_day1)
@@ -74,6 +76,9 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         btn_period2 = fragmentView.findViewById(R.id.map_period2)
         btn_period3 = fragmentView.findViewById(R.id.map_period3)
 
+        btn_day1.text = WeatherSingleton.weatherList[0].day.toString() + " " + WeatherSingleton.weatherList[0].month
+        btn_day2.text = WeatherSingleton.weatherList[1].day.toString() + " " + WeatherSingleton.weatherList[1].month
+
         btn_day1.isEnabled = false
         btn_day1.isClickable = false
         btn_period0.isEnabled = false
@@ -82,11 +87,13 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         btn_day1.setOnClickListener {
             lockButtonDay(btn_day1)
             day = 0
+            btn_period3.visibility = View.VISIBLE
             setMarkers()
         }
         btn_day2.setOnClickListener {
             lockButtonDay(btn_day2)
             day = 1
+            btn_period3.visibility = View.GONE
             setMarkers()
         }
         btn_period0.setOnClickListener {
@@ -122,17 +129,21 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
     private fun setMarkers() {
         ggMap.clear()
         var currentCommune = ""
+        var myLocation = true
         for (item in WeatherSingleton.weatherList[day].dayList[period].periodList) {
-            if (currentCommune != item.communeLocation.commune) {
-                val icon: Bitmap = BitmapFactory.decodeResource(resources, item.icon)
-                ggMap.addMarker(
-                    MarkerOptions()
-                        .position(LatLng(item.communeLocation.latitude, item.communeLocation.longitude))
-                        .title(item.communeLocation.commune)
-                        .icon(fromBitmap(createScaledBitmap(icon, 80, 80, false)))
-                )
-                currentCommune = item.communeLocation.commune
+            if (!myLocation) {
+                if (currentCommune != item.communeLocation.commune) {
+                    val icon: Bitmap = BitmapFactory.decodeResource(resources, item.icon)
+                    ggMap.addMarker(
+                        MarkerOptions()
+                            .position(LatLng(item.communeLocation.latitude, item.communeLocation.longitude))
+                            .title(item.communeLocation.commune)
+                            .icon(fromBitmap(createScaledBitmap(icon, 80, 80, false)))
+                    )
+                    currentCommune = item.communeLocation.commune
+                }
             }
+            myLocation = false
         }
         ggMap.setOnMarkerClickListener(this)
     }

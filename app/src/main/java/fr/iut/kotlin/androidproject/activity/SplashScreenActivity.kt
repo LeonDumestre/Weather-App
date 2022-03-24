@@ -22,7 +22,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import fr.iut.kotlin.androidproject.R
-import fr.iut.kotlin.androidproject.asyncTask.AllDataAsyncTask
+import fr.iut.kotlin.androidproject.asyncTask.OpenDataAsyncTask
+import fr.iut.kotlin.androidproject.data.CommuneLocation
 import fr.iut.kotlin.androidproject.utils.MyLocationSingleton
 import java.util.*
 
@@ -49,9 +50,6 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
         if (isOnline()) {
             tvLoading.text = "Chargement de la position..."
             getCurrentLocation()
-
-            tvLoading.text = "Chargement des données..."
-            AllDataAsyncTask().execute(this)
         } else {
             //TODO alertDialog ne s'affiche pas
             val alertDialog : AlertDialog
@@ -69,7 +67,7 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
             getLastLocation()
 
             tvLoading.text = "Chargement des données..."
-            AllDataAsyncTask().execute(this)
+            OpenDataAsyncTask().execute(this)
         }
     }
 
@@ -148,6 +146,9 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
         val geocoder = Geocoder(this, Locale.getDefault())
         val addresses: List<Address> = geocoder.getFromLocation(location.latitude, location.longitude, 1)
         MyLocationSingleton.addLocation(addresses[0].locality, location.latitude, location.longitude)
+
+        tvLoading.text = "Chargement des données..."
+        OpenDataAsyncTask().execute(this, CommuneLocation(addresses[0].locality, location.latitude, location.longitude))
     }
 
 }

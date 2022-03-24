@@ -97,25 +97,80 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_commune"
+            android:id="@+id/weather_commune"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:textSize="30dp"
-            android:layout_marginTop="5dp"
+            android:textSize="30sp"
+            android:text="Bourg-en-Bresse"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/weather_layout_periods" />
 
-        <ListView
-            android:id="@+id/weather_list"
+        <ImageView
+            android:id="@+id/weather_image"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_sun"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/weather_commune" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/weather_layout_temperature"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_margin="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_commune" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="15dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/weather_image">
+
+            <TextView
+                android:id="@+id/weather_temperature"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="12°C"
+                android:textAlignment="center"
+                android:textSize="80sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <LinearLayout
+                android:id="@+id/weather_bonus_temperature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:textAlignment="center"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/weather_temperature">
+
+                <TextView
+                    android:id="@+id/weather_min_temperature"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Min : 11°C"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    app:layout_constraintStart_toEndOf="parent" />
+
+                <TextView
+                    android:id="@+id/weather_max_temperature"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Max : 13°C"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    app:layout_constraintStart_toEndOf="@+id/weather_min_temperature" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
