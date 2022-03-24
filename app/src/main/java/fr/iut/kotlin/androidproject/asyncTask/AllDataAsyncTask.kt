@@ -23,11 +23,9 @@ import java.time.ZoneOffset
 
 class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
 
-    private val MAX_DATA = 39
     private val HOST : String =
-        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=$MAX_DATA&sort=-forecast&q=not(%23null(total_water_precipitation))"
+        "https://public.opendatasoft.com/api/records/1.0/search/?dataset=arome-0025-enriched&rows=500&sort=-forecast&q=not(%23null(total_water_precipitation))"
     private var jsonList : MutableList<String> = mutableListOf()
-    private var tmpList : MutableList<WeatherAllData> = mutableListOf()
     private val communeList = CommuneSingleton.list
     private lateinit var splashScreenActivity: WeakReference<SplashScreenActivity>
 
@@ -36,11 +34,21 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
 
         Log.e("APPLOG", "Début des requêtes")
 
+        var finalHOST = HOST + "&geofilter.distance=" + MyLocationSingleton.latitude + "," + MyLocationSingleton.longitude + ",1300"
+        Log.e("APPLOG", finalHOST)
+        var urlConnection = URL(finalHOST).openConnection() as HttpURLConnection
+        if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
+            val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
+            jsonList.add(input.readLine())
+            input.close()
+        }
+        urlConnection.disconnect()
+
         //Requêtes des principales villes de France
         for (item in communeList)  {
-            val finalHOST = HOST + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",964"
+            finalHOST = HOST + "&geofilter.distance=" + item.latitude + "," + item.longitude + ",1500"
             Log.e("APPLOG", finalHOST)
-            val urlConnection = URL(finalHOST).openConnection() as HttpURLConnection
+            urlConnection = URL(finalHOST).openConnection() as HttpURLConnection
             if (urlConnection.responseCode == HttpURLConnection.HTTP_OK) {
                 val input = BufferedReader(InputStreamReader(urlConnection.inputStream))
                 jsonList.add(input.readLine())
@@ -57,23 +65,19 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     override fun onPostExecute(result: String?) {
+        initWeatherSingleton()
 
         for (jsonItem in jsonList) {
+            val tmpList : MutableList<WeatherAllData> = mutableListOf()
             val nhits = JSONObject(jsonItem).optString("nhits")
             if (nhits.toInt() > 0) {
                 val records = JSONObject(jsonItem).getJSONArray("records")
-                val firstDay = getDay(records.getJSONObject(1).getJSONObject("fields").optString("forecast"))
-                var nbData = 0
-
-                while (nbData < MAX_DATA) {
-                    val period = getPeriod(records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
-
-                    //Log.d("APPLOG", "PERIOD = $period")
-                    while (nbData < MAX_DATA &&
-                        period == getPeriod((records.getJSONObject(nbData).getJSONObject("fields").optString("forecast")))
-                    ) {
-                        //Log.d("APPLOG", "current date : " + records.getJSONObject(nbData).getJSONObject("fields").optString("forecast"))
-                        val item = records.getJSONObject(nbData).getJSONObject("fields")
+                var ind = 0
+                Log.e("APPLOG", "records : " + records.length())
+                Log.e("APPLOG", "nhits : $nhits")
+                while (ind < nhits.toInt()) {
+                    val item = records.getJSONObject(ind).getJSONObject("fields")
+                    if (tmpList.size == 0 || item.optString("forecast") != tmpList[tmpList.size - 1].forecast) {
                         tmpList.add(
                             WeatherAllData(
                                 CommuneSingleton.getCommuneLocation(item.optString("commune")),
@@ -87,32 +91,59 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
                                 item.optDouble("wind_speed")
                             )
                         )
-                        //Log.e("APPLOG", ""+nbData)
-                        nbData++
                     }
-
-                    if (tmpList.size > 0) {
-                        val realDay = getDay(tmpList[tmpList.size-1].forecast)
-                        val indDay = realDay - firstDay
-                        if (WeatherSingleton.weatherList.isEmpty() || WeatherSingleton.weatherList.size <= indDay) {
-                            WeatherSingleton.weatherList.add(DayWeather())
-                            WeatherSingleton.weatherList[indDay].day = realDay
-                        }
-                        if (WeatherSingleton.weatherList[indDay].dayList.isEmpty() || WeatherSingleton.weatherList[indDay].dayList.size <= period) {
-                            WeatherSingleton.weatherList[indDay].dayList.add(PeriodWeather())
-                            WeatherSingleton.weatherList[indDay].dayList[period].period = period
-                        }
-                        Log.e("APPLOG", "day = $indDay")
-                        Log.e("APPLOG", "period = $period")
-                        WeatherSingleton.weatherList[indDay].dayList[period].periodList.add(WeatherData(tmpList, period))
-                        Log.i("APPLOG", "commune : " +  WeatherSingleton.weatherList[indDay].dayList[period].periodList[WeatherSingleton.weatherList[indDay].dayList[period].periodList.size-1].communeLocation.commune)
-                        tmpList.clear()
-                    }
+                    ind++
                 }
-
+                splitDataIntoPeriods(tmpList)
             }
         }
         startMainActivity()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun initWeatherSingleton() {
+        val date = LocalDateTime.now()
+        for (day in 0 until 2) {
+            WeatherSingleton.weatherList.add(DayWeather(date.dayOfMonth, date.month.toString()))
+            for (period in 0 until 4) {
+                var strPeriod = ""
+                when (period) {
+                    0 -> strPeriod = "Nuit"
+                    1 -> strPeriod = "Matin"
+                    2 -> strPeriod = "Après-Midi"
+                    3 -> strPeriod = "Soir"
+                }
+                WeatherSingleton.weatherList[day].dayList.add(PeriodWeather(strPeriod))
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun splitDataIntoPeriods(list : MutableList<WeatherAllData>) {
+
+        if (list.size > 0) {
+            val tmpList : MutableList<WeatherAllData> = mutableListOf()
+            var indDay = 0
+            var period = 0
+
+            for (item in list) {
+                if (getPeriod(item.forecast) == period) {
+                    tmpList.add(item)
+                } else {
+                    addWeatherData(tmpList, indDay, period)
+                    tmpList.clear()
+                    period = (period + 1) % 4
+                    if (period == 0)
+                        indDay++
+                }
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun addWeatherData(list : MutableList<WeatherAllData>, indDay : Int, period : Int) {
+        WeatherSingleton.weatherList[indDay].dayList[period].periodList.add(WeatherData(list, period))
+        Log.i("APPLOG", "commune : " +  WeatherSingleton.weatherList[indDay].dayList[period].periodList[WeatherSingleton.weatherList[indDay].dayList[period].periodList.size-1].communeLocation.commune)
     }
 
 
@@ -126,13 +157,6 @@ class AllDataAsyncTask : AsyncTask<Any, Void, String>() {
             in 18..22 -> 3      //Evening
             else -> 0           //Night
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun getDay(forecast : String): Int {
-        val cutDate = forecast.substringBefore('+')
-        val date = LocalDateTime.parse(cutDate).atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
-        return date.dayOfMonth
     }
 
     private fun startMainActivity() {

@@ -45,7 +45,6 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         googleMap.uiSettings.isZoomControlsEnabled = false
         googleMap.uiSettings.isCompassEnabled = false
         googleMap.uiSettings.setAllGesturesEnabled(false)
-        ggMap = googleMap
 
         val center = LatLng(46.227638, 2.213749)
         val zoomLevel = (ln(40000 / (600000.0f * 3.5 / 1000 / 2)) / ln(2.0)).toFloat()
@@ -62,6 +61,7 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         style.strokeWidth = 2f
 
         layer.addLayerToMap()
+        ggMap = googleMap
         setMarkers()
     }
 

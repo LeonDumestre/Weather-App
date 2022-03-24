@@ -48,7 +48,7 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
 
         if (isOnline()) {
             tvLoading.text = "Chargement de la position..."
-            getLastLocation()
+            getCurrentLocation()
 
             tvLoading.text = "Chargement des données..."
             AllDataAsyncTask().execute(this)
