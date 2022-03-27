@@ -1,5 +1,6 @@
 package fr.iut.kotlin.androidproject.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -71,21 +72,35 @@ class WeatherFragment : Fragment() {
         }
         btn_period0.setOnClickListener {
             lockButtonPeriod(btn_period0)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 0
             setWeather()
         }
         btn_period1.setOnClickListener {
             lockButtonPeriod(btn_period1)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 1
             setWeather()
         }
         btn_period2.setOnClickListener {
             lockButtonPeriod(btn_period2)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 2
             setWeather()
         }
         btn_period3.setOnClickListener {
             lockButtonPeriod(btn_period3)
+            btn_day2.isEnabled = false
+            btn_day2.isClickable = false
             period = 3
             setWeather()
         }
@@ -93,9 +108,10 @@ class WeatherFragment : Fragment() {
         return fragmentView
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setWeather() {
         val weatherData = WeatherSingleton.weatherList[day].dayList[period].periodList[0]
-        tvCommune.text = weatherData.communeLocation.commune
+        //tvCommune.text = weatherData.communeLocation.commune
         ivIcon.setImageResource(weatherData.icon)
         tvTemp.text = weatherData.temp.toString() + "°C"
         tvMinTemp.text = "Min: " + weatherData.minTemp.toString() + "°C"

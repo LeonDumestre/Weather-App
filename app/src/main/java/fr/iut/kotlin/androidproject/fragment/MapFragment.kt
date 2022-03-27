@@ -98,21 +98,35 @@ class MapFragment : Fragment(), GoogleMap.OnMarkerClickListener, View.OnClickLis
         }
         btn_period0.setOnClickListener {
             lockButtonPeriod(btn_period0)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 0
             setMarkers()
         }
         btn_period1.setOnClickListener {
             lockButtonPeriod(btn_period1)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 1
             setMarkers()
         }
         btn_period2.setOnClickListener {
             lockButtonPeriod(btn_period2)
+            if (!btn_day1.isEnabled) {
+                btn_day2.isEnabled = true
+                btn_day2.isClickable = true
+            }
             period = 2
             setMarkers()
         }
         btn_period3.setOnClickListener {
             lockButtonPeriod(btn_period3)
+            btn_day2.isEnabled = false
+            btn_day2.isClickable = false
             period = 3
             setMarkers()
         }
