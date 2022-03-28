@@ -34,6 +34,7 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
     private val locationPermissionCode = 2
     private lateinit var tvLoading : TextView
     private lateinit var progressBar : ProgressBar
+    private var isConnected = false
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("SetTextI18n")
@@ -58,16 +59,15 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
             val inflater: LayoutInflater = this.layoutInflater
             loading.setView(inflater.inflate(R.layout.custom_dialog_loading, null))
 
-            alertDialog = loading.create()
-            alertDialog.show()
+            if (!isOnline()) {
+                showAlertDialog()
+            } else {
+                tvLoading.text = "Chargement de la position..."
+                getLastLocation()
 
-            while (!isOnline()) { }
-            alertDialog.dismiss()
-            tvLoading.text = "Chargement de la position..."
-            getLastLocation()
-
-            tvLoading.text = "Chargement des données..."
-            OpenDataAsyncTask().execute(this)
+                tvLoading.text = "Chargement des données..."
+                OpenDataAsyncTask().execute(this)
+            }
         }
     }
 
@@ -149,6 +149,22 @@ class SplashScreenActivity : AppCompatActivity(), LocationListener {
 
         tvLoading.text = "Chargement des données..."
         OpenDataAsyncTask().execute(this, CommuneLocation(addresses[0].locality, location.latitude, location.longitude))
+    }
+
+    private fun showAlertDialog() {
+        isConnected = false
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Pas de connexion !")
+        builder.setCancelable(false)
+        builder.setMessage("Il semblerait que vous ne soyez pas connecter à internet, voulez-vous charger les derniers sites enregistrés ou quitter l'application ?")
+
+
+        builder.setNegativeButton("Quitter") { dialog, _ ->
+            dialog.dismiss()
+            finish()
+        }
+
+        builder.show()
     }
 
 }
